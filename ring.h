@@ -1,11 +1,7 @@
 #ifndef _DS_RING_H_
 #define _DS_RING_H_
 
-#ifndef FOR_UNIT_TEST
-    #include "prod_inc.h"
-#else
-    #include "dev_inc.h"
-#endif
+#include "inc.h"
 
 typedef struct ring ring_t;
 

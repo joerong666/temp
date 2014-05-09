@@ -1,10 +1,4 @@
-#include "rc.h"
-
-#ifndef FOR_UNIT_TEST
-    #include "prod_inc.h"
-#else
-    #include "dev_inc.h"
-#endif
+#include "inc.h"
 
 rc_t scan_files(const char *path, int(*filter)(const struct dirent *),
                    int(*compar)(const struct dirent **, const struct dirent **), 
@@ -59,3 +53,36 @@ _out:
     return rc;
 }
 
+rc_t random_access_file(int fd, char **map, size_t *size)
+{
+    void *p = NULL;
+    int ret;
+    rc_t rc = RC_OK;
+    stat fst;
+
+    ret = fstat(fd, &fst);
+    GO_OUT_IF_FAIL(ret == 0, errno, "Stat fd(%d) fail", fd);
+
+    p = mmap(NULL, fst.st_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+    GO_OUT_IF_FAIL(p != MAP_FAILED, errno, "Mmap %s fail", file);
+    
+_out:
+    if(rc == RC_OK) {
+        *size = fst.st_size;
+        *map = (char *)p;
+    }
+
+    return rc;
+}
+
+rc_t release_access(char *map, size_t size)
+{
+    rc_t rc = RC_OK;
+    int ret;
+
+    ret = munmap(map, size);
+    GO_OUT_IF_FAIL(ret == 0, errno, "Munmap fail");
+    
+_out:
+    return rc;
+}

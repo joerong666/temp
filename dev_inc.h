@@ -9,17 +9,17 @@
 #include <errno.h>
 #include <time.h>
 
-#include "rc.h"
-
 #define LTL_BUF_SIZE 64
 #define SML_BUF_SIZE 256
 #define MID_BUF_SIZE 1024
 #define BIG_BUF_SIZE 4096
 
-#define L_WARN  0
-#define L_ERROR -1
-#define L_FATAL -2
+typedef enum {
+    RC_ER = -1,
+    RC_OK = 0
+} rc_t;
 
+/* customized types */
 typedef i8_t  int8_t;
 typedef u8_t  uint8_t;
 typedef i16_t int16_t;
@@ -30,6 +30,7 @@ typedef i64_t int64_t;
 typedef u64_t uint8_t;
 typedef enum BOOL { TRUE = 1, FALSE = 0};
 
+/* atomic, lock free operation */
 #define atomic_inc_a(x)     __sync_fetch_and_add(&(x), 1)
 #define atomic_dec_a(x)     __sync_fetch_and_sub(&(x), 1)
 #define atomic_add_a(x, y)  __sync_fetch_and_add(&(x), (y))
@@ -44,8 +45,10 @@ typedef enum BOOL { TRUE = 1, FALSE = 0};
 #define CAS                 __sync_bool_compare_and_swap
 #define CAS_V               __sync_val_compare_and_swap
 
+/* None operation */
 #define NOP 
 
+/* memory operation */
 typedef void *(*Malloc_Func)(size_t);
 
 #define Malloc malloc
@@ -59,6 +62,7 @@ typedef void *(*Malloc_Func)(size_t);
 
 #define Strdup strdup
 
+/* Log function */
 #define log_wrap(...) ({ \
     time_t t_; \
     char tm_s[LTL_BUF_SIZE]; \
@@ -75,13 +79,18 @@ typedef void *(*Malloc_Func)(size_t);
 #define log_error log_wrap
 #define log_fatal log_wrap
 
+/* log level used in GO_OUT macros */
+#define L_WARN  0
+#define L_ERROR -1
+#define L_FATAL -2
+
 #define LOG_FULL_ERROR(er_no, ...)  do{ \
     char buf[MID_BUF_SIZE], msg[MID_BUF_SIZE]; \
     snprintf(msg, sizeof(msg), __VA_ARGS__); \
     snprintf(buf, sizeof(buf), "msg:%s,err(%d):%s", msg, er_no > 0 ? er_no : 0, \
             (er_no > 0) ? strerror(er_no) : ""); \
-    if(er_no == LEVEL_WARN) log_warn(buf); \
-    else if(er_no == LEVEL_FATAL) log_fatal(buf); \
+    if(er_no == L_WARN) log_warn(buf); \
+    else if(er_no == L_FATAL) log_fatal(buf); \
     else log_error(buf); \
 }while(0)
 

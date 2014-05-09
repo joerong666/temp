@@ -1,11 +1,7 @@
 #ifndef _STORAGE_HIDB_H_
 #define _STORAGE_HIDB_H_
 
-#ifndef FOR_UNIT_TEST
-    #include "prod_inc.h"
-#else
-    #include "dev_inc.h"
-#endif
+#include "inc.h"
 
 typedef struct db db_t;
 typedef rc_t (*func_rulefilter)(char *);
@@ -33,5 +29,7 @@ rc_t db_clean_file(db_t *db, const char *time);
 rc_t db_freeze(db_t *db);
 
 rc_t db_unfreeze(db_t *db);
+
+rc_t db_repair(db_t *db);
 
 #endif
